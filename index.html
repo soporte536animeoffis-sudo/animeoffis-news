@@ -301,13 +301,13 @@
           todos.push(m);
         });
         snapnoticiasaf.forEach(c => {
-  const a = c.val();
-  a.id = c.key;
-  a.tipo = "animeoffis";
-  a.imagen1 = a.imagen;
-  a.descripcion1 = a.descripcion;
-  a.texto = a.descripcion;
-  todos.push(a);
+  const n = c.val();
+  n.id = c.key;
+  n.tipo = "noticiasaf";
+  n.imagen1 = n.imagen;
+  n.descripcion1 = n.descripcion;
+  n.texto = n.descripcion;
+  todos.push(n);
 });
 
         noticias = todos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
