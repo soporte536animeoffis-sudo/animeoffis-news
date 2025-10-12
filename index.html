@@ -271,7 +271,7 @@
         db.ref("peliculas").limitToLast(100).once("value"),
         db.ref("mangas").limitToLast(100).once("value"),
         db.ref("noticiasaf").limitToLast(100).once("value")
-      ]).then(([snapNoticias, snapPeliculas, snapMangas]) => {
+      ]).then(([snapNoticias, snapPeliculas, snapMangas, snapnoticiasaf]) => {
         const todos = [];
 
         snapNoticias.forEach(c => {
@@ -303,7 +303,7 @@
         snapnoticiasaf.forEach(c => {
   const a = c.val();
   a.id = c.key;
-  a.tipo = "animeoffis";
+  a.tipo = "noticiasaf";
   a.imagen1 = a.imagen;
   a.descripcion1 = a.descripcion;
   a.texto = a.descripcion;
