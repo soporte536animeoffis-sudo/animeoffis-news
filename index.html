@@ -129,6 +129,8 @@
     <a href="pelicula.html">Películas</a>
     <a href="noticias.html">Animes</a>
     <a href="noticias.html?tipo=manga">Mangas</a>
+    <a href="animeoffis.html">Anime Offis</a>
+
   </nav>
   <input id="buscador" placeholder="Buscar noticias..." />
   <main id="contenedorNoticias">Cargando...</main>
@@ -157,6 +159,7 @@
         case "noticia": return "🔥 Anime";
         case "anime": return "🔥 Anime";
         case "manga": return "📚 Manga";
+        case "animeoffis": return "🌟 Anime Offis";
         default: return tipo;
       }
     }
@@ -266,7 +269,8 @@
       Promise.all([
         db.ref("noticias").limitToLast(100).once("value"),
         db.ref("peliculas").limitToLast(100).once("value"),
-        db.ref("mangas").limitToLast(100).once("value")
+        db.ref("mangas").limitToLast(100).once("value"),
+        db.ref("animeoffis").limitToLast(100).once("value")
       ]).then(([snapNoticias, snapPeliculas, snapMangas]) => {
         const todos = [];
 
@@ -296,6 +300,15 @@
           m.texto = m.descripcion;
           todos.push(m);
         });
+        snapAnimeOffis.forEach(c => {
+  const a = c.val();
+  a.id = c.key;
+  a.tipo = "animeoffis";
+  a.imagen1 = a.imagen;
+  a.descripcion1 = a.descripcion;
+  a.texto = a.descripcion;
+  todos.push(a);
+});
 
         noticias = todos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
