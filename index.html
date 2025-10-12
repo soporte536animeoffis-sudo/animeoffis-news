@@ -159,7 +159,7 @@
         case "noticia": return "🔥 Anime";
         case "anime": return "🔥 Anime";
         case "manga": return "📚 Manga";
-        case "animeoffis": return "🌟 Anime Offis";
+        case "noticiasaf": return "🌟 Anime Offis";
         default: return tipo;
       }
     }
@@ -270,7 +270,7 @@
         db.ref("noticias").limitToLast(100).once("value"),
         db.ref("peliculas").limitToLast(100).once("value"),
         db.ref("mangas").limitToLast(100).once("value"),
-        db.ref("animeoffis").limitToLast(100).once("value")
+        db.ref("noticiasaf").limitToLast(100).once("value")
       ]).then(([snapNoticias, snapPeliculas, snapMangas]) => {
         const todos = [];
 
@@ -300,7 +300,7 @@
           m.texto = m.descripcion;
           todos.push(m);
         });
-        snapAnimeOffis.forEach(c => {
+        snapnoticiasaf.forEach(c => {
   const a = c.val();
   a.id = c.key;
   a.tipo = "animeoffis";
