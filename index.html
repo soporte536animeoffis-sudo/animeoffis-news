@@ -98,6 +98,24 @@
       font-size: 0.8rem;
       color: #777;
     }
+    .reacciones button, .comentarios button {
+      margin-right: 5px;
+      background: #0f172a;
+      color: #9fc9ff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .comentarios input {
+      width: 80%;
+      padding: 6px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    ul { padding-left: 20px; }
+    li { font-size: 0.9rem; margin-bottom: 5px; color: #333; }
   </style>
 </head>
 <body>
@@ -110,7 +128,7 @@
     <a href="calendario.html">Calendario de Verano</a>
     <a href="pelicula.html">Películas</a>
     <a href="noticias.html">Animes</a>
-    <a href="manga.html">Mangas</a> <!-- Nuevo botón -->
+    <a href="noticias.html?tipo=manga">Mangas</a>
   </nav>
   <input id="buscador" placeholder="Buscar noticias..." />
   <main id="contenedorNoticias">Cargando...</main>
@@ -168,9 +186,41 @@
             ${largo ? `<span class="ver-mas" onclick="toggle(${i})">Ver más</span>` : ""}
             <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
             <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
+            <div class="reacciones">
+              <button onclick="darLike('${n.id}')">👍 Me gusta</button>
+              <button onclick="darDislike('${n.id}')">👎 No me gusta</button>
+              <span id="likes-${n.id}">${n.likes || 0}</span> likes,
+              <span id="dislikes-${n.id}">${n.dislikes || 0}</span> dislikes
+            </div>
+            <div class="comentarios">
+              <input type="text" id="comentario-${n.id}" placeholder="Escribe un comentario..." />
+              <button onclick="comentar('${n.id}')">💬 Comentar</button>
+              <ul id="lista-comentarios-${n.id}"></ul>
+            </div>
           </div>
         `;
         contenedor.appendChild(art);
+        // Mostrar comentarios en tiempo real
+        const lista = document.getElementById("lista-comentarios-" + n.id);
+        db.ref(`noticias/${n.id}/comentarios`).on("value", snap => {
+          lista.innerHTML = "";
+          snap.forEach(c => {
+            const com = c.val();
+            const li = document.createElement("li");
+            li.textContent = `💬 ${com.autor}: ${com.texto}`;
+            lista.appendChild(li);
+          });
+        });
+
+        // Actualizar likes/dislikes en tiempo real
+        db.ref(`noticias/${n.id}/likes`).on("value", snap => {
+          const span = document.getElementById("likes-" + n.id);
+          if (span) span.textContent = snap.val() || 0;
+        });
+        db.ref(`noticias/${n.id}/dislikes`).on("value", snap => {
+          const span = document.getElementById("dislikes-" + n.id);
+          if (span) span.textContent = snap.val() || 0;
+        });
       });
     }
 
@@ -187,6 +237,31 @@
       }
     }
 
+    function darLike(id) {
+      const ref = db.ref("noticias/" + id + "/likes");
+      ref.transaction(likes => (likes || 0) + 1);
+    }
+
+    function darDislike(id) {
+      const ref = db.ref("noticias/" + id + "/dislikes");
+      ref.transaction(dislikes => (dislikes || 0) + 1);
+    }
+
+    function comentar(id) {
+      const input = document.getElementById("comentario-" + id);
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      const nuevoComentario = {
+        autor: "Anónimo", // Puedes personalizar si tienes login
+        texto,
+        fecha: new Date().toISOString()
+      };
+
+      db.ref(`noticias/${id}/comentarios`).push(nuevoComentario);
+      input.value = "";
+    }
+
     function cargarTodo() {
       Promise.all([
         db.ref("noticias").limitToLast(100).once("value"),
@@ -197,12 +272,14 @@
 
         snapNoticias.forEach(c => {
           const n = c.val();
+          n.id = c.key;
           n.tipo = n.tipo || "noticia";
           todos.push(n);
         });
 
         snapPeliculas.forEach(c => {
           const p = c.val();
+          p.id = c.key;
           p.tipo = "pelicula";
           p.imagen1 = p.imagen;
           p.descripcion1 = p.descripcion;
@@ -210,8 +287,9 @@
           todos.push(p);
         });
 
-                snapMangas.forEach(c => {
+        snapMangas.forEach(c => {
           const m = c.val();
+          m.id = c.key;
           m.tipo = "manga";
           m.imagen1 = m.imagen;
           m.descripcion1 = m.descripcion;
@@ -221,7 +299,6 @@
 
         noticias = todos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-        // Filtro por tipo si se especifica en la URL
         const params = new URLSearchParams(window.location.search);
         const tipoFiltro = params.get("tipo");
         if (tipoFiltro) {
