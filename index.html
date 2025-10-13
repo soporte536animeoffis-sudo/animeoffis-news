@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Blog - Otaku-News</title>
+  <title>Anime Offis News</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -31,6 +31,7 @@
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
+      align-items: center;
     }
     nav a {
       color: #9fc9ff;
@@ -39,6 +40,12 @@
       font-weight: bold;
     }
     nav a:hover { background: #15263e; }
+    #idioma {
+      margin: 10px;
+      padding: 6px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
     #buscador {
       width: calc(100% - 40px); max-width: 600px;
       margin: 20px auto; display: block;
@@ -65,9 +72,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     .img-contenedor { position: relative; }
-    .img-contenedor img {
-      width: 100%; display: block;
-    }
+    .img-contenedor img { width: 100%; display: block; }
     .etiqueta, .etiqueta2 {
       position: absolute;
       background: #0077ff;
@@ -121,16 +126,19 @@
 <body>
   <header>
     <img class="logo" src="dylan.jpg" alt="Logo">
-    <h1>Anime Offis New</h1>
-    <p>Mantente al tanto de las novedades que tenemos para ti</p>
+    <h1 id="titulo">Anime Offis New</h1>
+    <p id="subtitulo">Mantente al tanto de las novedades que tenemos para ti</p>
   </header>
   <nav>
     <a href="calendario.html">Calendario de Verano</a>
     <a href="pelicula.html">Películas</a>
     <a href="noticias.html">Animes</a>
     <a href="noticias.html?tipo=manga">Mangas</a>
-    <a href="noticiasaf.html">Anime Offis</a>
-
+    <a href="noticias.html?tipo=noticiasaf">Anime Offis</a>
+    <select id="idioma">
+      <option value="es">🇲🇽 Español</option>
+      <option value="en">🇺🇸 English</option>
+    </select>
   </nav>
   <input id="buscador" placeholder="Buscar noticias..." />
   <main id="contenedorNoticias">Cargando...</main>
@@ -152,19 +160,55 @@
     const contenedor = document.getElementById("contenedorNoticias");
     const buscador = document.getElementById("buscador");
     let noticias = [];
+    let idiomaActual = "es";
+
+    const traducciones = {
+      es: {
+        titulo: "Anime Offis New",
+        subtitulo: "Mantente al tanto de las novedades que tenemos para ti",
+        buscar: "Buscar noticias...",
+        etiquetas: {
+          pelicula: "🎬 Película",
+          noticia: "🔥 Anime",
+          anime: "🔥 Anime",
+          manga: "📚 Manga",
+          noticiasaf: "🌟 Anime Offis"
+        },
+        botones: {
+          like: "👍 Me gusta",
+          dislike: "👎 No me gusta",
+          comentar: "💬 Comentar",
+          verMas: "Ver más",
+          verMenos: "Ver menos"
+        }
+      },
+      en: {
+        titulo: "Anime Offis News",
+        subtitulo: "Stay up to date with the latest news",
+        buscar: "Search news...",
+        etiquetas: {
+          pelicula: "🎬 Movie",
+          noticia: "🔥 Anime",
+          anime: "🔥 Anime",
+          manga: "📚 Manga",
+          noticiasaf: "🌟 Anime Offis"
+        },
+        botones: {
+          like: "👍 Like",
+          dislike: "👎 Dislike",
+          comentar: "💬 Comment",
+          verMas: "Read more",
+          verMenos: "Read less"
+        }
+      }
+    };
 
     function etiquetaPorTipo(tipo) {
-      switch (tipo) {
-        case "pelicula": return "🎬 Película";
-        case "noticia": return "🔥 Anime";
-        case "anime": return "🔥 Anime";
-        case "manga": return "📚 Manga";
-        case "noticiasaf": return "🌟 Anime Offis";
-        default: return tipo;
-      }
+      return traducciones[idiomaActual].etiquetas[tipo] || tipo;
     }
 
     function render(nList) {
+      const t = traducciones[idiomaActual];
       contenedor.innerHTML = "";
       if (nList.length === 0) {
         contenedor.innerHTML = "<p>No se encontraron noticias.</p>";
@@ -175,7 +219,7 @@
         const resumen = largo ? n.texto.slice(0, 200) + "..." : n.texto;
         const tipo = etiquetaPorTipo(n.tipo || "noticia");
         const art = document.createElement("article");
-        art.className = "noticia";
+                art.className = "noticia";
         art.innerHTML = `
           <div class="img-contenedor">
             <img src="${n.imagen1 || n.imagen}" alt="Imagen">
@@ -186,24 +230,24 @@
             <h2 class="titulo"><a href="#">${n.titulo || "Sin título"}</a></h2>
             ${n.descripcion1 ? `<p class="descripcion">${n.descripcion1}</p>` : ""}
             <p class="texto" id="t${i}">${resumen}</p>
-            ${largo ? `<span class="ver-mas" onclick="toggle(${i})">Ver más</span>` : ""}
+            ${largo ? `<span class="ver-mas" onclick="toggle(${i})">${t.botones.verMas}</span>` : ""}
             <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
             <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
             <div class="reacciones">
-              <button onclick="darLike('${n.id}')">👍 Me gusta</button>
-              <button onclick="darDislike('${n.id}')">👎 No me gusta</button>
+              <button onclick="darLike('${n.id}')">${t.botones.like}</button>
+              <button onclick="darDislike('${n.id}')">${t.botones.dislike}</button>
               <span id="likes-${n.id}">${n.likes || 0}</span> likes,
               <span id="dislikes-${n.id}">${n.dislikes || 0}</span> dislikes
             </div>
             <div class="comentarios">
-              <input type="text" id="comentario-${n.id}" placeholder="Escribe un comentario..." />
-              <button onclick="comentar('${n.id}')">💬 Comentar</button>
+              <input type="text" id="comentario-${n.id}" placeholder="${t.botones.comentar}" />
+              <button onclick="comentar('${n.id}')">${t.botones.comentar}</button>
               <ul id="lista-comentarios-${n.id}"></ul>
             </div>
           </div>
         `;
         contenedor.appendChild(art);
-        // Mostrar comentarios en tiempo real
+
         const lista = document.getElementById("lista-comentarios-" + n.id);
         db.ref(`noticias/${n.id}/comentarios`).on("value", snap => {
           lista.innerHTML = "";
@@ -215,11 +259,11 @@
           });
         });
 
-        // Actualizar likes/dislikes en tiempo real
         db.ref(`noticias/${n.id}/likes`).on("value", snap => {
           const span = document.getElementById("likes-" + n.id);
           if (span) span.textContent = snap.val() || 0;
         });
+
         db.ref(`noticias/${n.id}/dislikes`).on("value", snap => {
           const span = document.getElementById("dislikes-" + n.id);
           if (span) span.textContent = snap.val() || 0;
@@ -231,12 +275,13 @@
       const p = document.getElementById("t" + i);
       const btn = p.nextElementSibling;
       const full = noticias[i].texto;
-      if (btn.textContent === "Ver más") {
+      const t = traducciones[idiomaActual].botones;
+      if (btn.textContent === t.verMas) {
         p.textContent = full;
-        btn.textContent = "Ver menos";
+        btn.textContent = t.verMenos;
       } else {
         p.textContent = full.slice(0, 200) + "...";
-        btn.textContent = "Ver más";
+        btn.textContent = t.verMas;
       }
     }
 
@@ -256,7 +301,7 @@
       if (!texto) return;
 
       const nuevoComentario = {
-        autor: "Anónimo", // Puedes personalizar si tienes login
+        autor: "Anónimo",
         texto,
         fecha: new Date().toISOString()
       };
@@ -271,7 +316,7 @@
         db.ref("peliculas").limitToLast(100).once("value"),
         db.ref("mangas").limitToLast(100).once("value"),
         db.ref("noticiasaf").limitToLast(100).once("value")
-      ]).then(([snapNoticias, snapPeliculas, snapMangas, snapnoticiasaf]) => {
+      ]).then(([snapNoticias, snapPeliculas, snapMangas, snapAF]) => {
         const todos = [];
 
         snapNoticias.forEach(c => {
@@ -300,15 +345,16 @@
           m.texto = m.descripcion;
           todos.push(m);
         });
-        snapnoticiasaf.forEach(c => {
-  const n = c.val();
-  n.id = c.key;
-  n.tipo = "noticiasaf";
-  n.imagen1 = n.imagen;
-  n.descripcion1 = n.descripcion;
-  n.texto = n.descripcion;
-  todos.push(n);
-});
+
+        snapAF.forEach(c => {
+          const a = c.val();
+          a.id = c.key;
+          a.tipo = "noticiasaf";
+          a.imagen1 = a.imagen;
+          a.descripcion1 = a.descripcion;
+          a.texto = a.descripcion;
+          todos.push(a);
+        });
 
         noticias = todos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
@@ -329,6 +375,15 @@
         (n.descripcion1 || "").toLowerCase().includes(txt) ||
         (n.texto || "").toLowerCase().includes(txt)
       ));
+    });
+
+    document.getElementById("idioma").addEventListener("change", e => {
+      idiomaActual = e.target.value;
+      const t = traducciones[idiomaActual];
+      document.getElementById("titulo").textContent = t.titulo;
+      document.getElementById("subtitulo").textContent = t.subtitulo;
+      document.getElementById("buscador").placeholder = t.buscar;
+      render(noticias);
     });
 
     cargarTodo();
