@@ -160,6 +160,10 @@
     const db = firebase.database();
     const contenedor = document.getElementById("contenedorNoticias");
     const buscador = document.getElementById("buscador");
+    tituloPrincipal.textContent = traducciones[idiomaActual].titulo;
+subtitulo.textContent = traducciones[idiomaActual].subtitulo;
+buscador.placeholder = traducciones[idiomaActual].buscar;
+
     let noticias = [];
     let idiomaActual = "es";
 
@@ -230,9 +234,10 @@
           </div>
           <div class="contenido">
             <h2 class="titulo"><a href="#">${n.titulo || "Sin título"}</a></h2>
-           ${(n.descripcion || n.descripcion1 || "").split('\\n\\n').map(p => `<p>${p}</p>`).join('')}
-            <p class="texto" id="t${i}">${resumen}</p>
-            ${largo ? `<span class="ver-mas" onclick="toggle(${i})">${t.botones.verMas}</span>` : ""}
+           <h2 class="titulo"><a href="#">${n[`titulo_${idiomaActual}`] || "Sin título"}</a></h2>
+${(n[`descripcion_${idiomaActual}`] || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
+<p class="texto" id="t${i}">${(n[`texto_${idiomaActual}`] || "").slice(0, 200)}...</p>
+            const full = n[`texto_${idiomaActual}`] || "";
             <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
             <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
             <div class="reacciones">
