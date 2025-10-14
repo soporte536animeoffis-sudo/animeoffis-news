@@ -130,11 +130,12 @@
     <p id="subtitulo">Mantente al tanto de las novedades que tenemos para ti</p>
   </header>
   <nav>
-    <a href="calendario.html">Calendario de Verano</a>
+    <a href="calendario.html">Calendario de otoño</a>
     <a href="pelicula.html">Películas</a>
     <a href="noticias.html">Animes</a>
     <a href="noticias.html?tipo=manga">Mangas</a>
     <a href="noticias.html?tipo=noticiasaf">Anime Offis</a>
+    <a href="JDnew-sempai">JD New Sempai Anime</a>
     <select id="idioma">
       <option value="es">🇲🇽 Español</option>
       <option value="en">🇺🇸 English</option>
@@ -172,7 +173,8 @@
           noticia: "🔥 Anime",
           anime: "🔥 Anime",
           manga: "📚 Manga",
-          noticiasaf: "🌟 Anime Offis"
+          noticiasaf: "🌟 Anime Offis",
+          jdnew: "📰 JD-NEW"
         },
         botones: {
           like: "👍 Me gusta",
@@ -191,7 +193,8 @@
           noticia: "🔥 Anime",
           anime: "🔥 Anime",
           manga: "📚 Manga",
-          noticiasaf: "🌟 Anime Offis"
+          noticiasaf: "🌟 Anime Offis",
+           jdnew: "📰 JD-NEW"
         },
         botones: {
           like: "👍 Like",
@@ -228,7 +231,7 @@
           </div>
           <div class="contenido">
             <h2 class="titulo"><a href="#">${n.titulo || "Sin título"}</a></h2>
-            ${n.descripcion1 ? `<p class="descripcion">${n.descripcion1}</p>` : ""}
+           ${(n.descripcion || n.descripcion1 || "").split('\\n\\n').map(p => `<p>${p}</p>`).join('')}
             <p class="texto" id="t${i}">${resumen}</p>
             ${largo ? `<span class="ver-mas" onclick="toggle(${i})">${t.botones.verMas}</span>` : ""}
             <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
@@ -315,7 +318,8 @@
         db.ref("noticias").limitToLast(100).once("value"),
         db.ref("peliculas").limitToLast(100).once("value"),
         db.ref("mangas").limitToLast(100).once("value"),
-        db.ref("noticiasaf").limitToLast(100).once("value")
+        db.ref("noticiasaf").limitToLast(100).once("value"),
+         db.ref("jdnew").limitToLast(100).once("value")
       ]).then(([snapNoticias, snapPeliculas, snapMangas, snapAF]) => {
         const todos = [];
 
@@ -354,6 +358,15 @@
           a.descripcion1 = a.descripcion;
           a.texto = a.descripcion;
           todos.push(a);
+        });
+         snapjdnew.forEach(c => {
+          const j = c.val();
+          j.id = c.key;
+          j.tipo = "jdnew";
+          j.imagen1 = j.imagen;
+          j.descripcion1 = j.descripcion;
+          j.texto = j.descripcion;
+          todos.push(j);
         });
 
         noticias = todos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
