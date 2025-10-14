@@ -217,7 +217,7 @@
           <img src="${n.imagen1 || n.imagen}" alt="Imagen">
           <div class="contenido">
             <h2>${n.titulo || "Sin título"}</h2>
-           ${(n.descripcion || n.descripcion1 || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
+           ${(n.descripcion || n.descripcion1 || "").split('\\n\\n').map(p => `<p>${p}</p>`).join('')}
 ${(n.texto || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
             ${n.trailer ? `<p>🔗 Trailer: <a href="${n.trailer}" target="_blank">${n.trailer}</a></p>` : ""}
             <div class="autor">✍️ ${n.autor || "JD News"}</div>
