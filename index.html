@@ -215,6 +215,7 @@ buscador.placeholder = traducciones[idiomaActual].buscar;
     }
 
     function render(nList) {
+      const t = traducciones[idiomaActual];
       contenedor.innerHTML = "";
       if (nList.length === 0) {
         contenedor.innerHTML = `<p>${textos[idiomaActual].sinNoticias}</p>`;
