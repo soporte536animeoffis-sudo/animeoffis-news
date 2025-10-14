@@ -3,35 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JD News - sempai anime</title>
+  <title>JD News Anime Pagana</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #121212;
-      color: #f0f0f0;
+      background: #0d1b2a;
+      color: #e0f2ff;
       margin: 0;
       padding: 0;
     }
     header {
-      background: #1f1f1f;
+      background: #1b263b;
       text-align: center;
       padding: 30px 20px;
     }
     header h1 {
-      color: #ff4081;
+      color: #00b4d8;
       margin: 0;
       font-size: 2.4rem;
     }
     header p {
-      color: #ccc;
+      color: #a8dadc;
       margin: 10px 0 0;
     }
+    #idiomaLabel {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1rem;
+    }
     #idioma {
-      margin: 20px auto;
+      margin: 10px auto;
       display: block;
       padding: 8px;
       font-size: 16px;
       border-radius: 5px;
+    }
+    .redes {
+      margin-top: 10px;
+    }
+    .redes a {
+      margin: 0 10px;
+      color: #00b4d8;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    #buscador {
+      width: calc(100% - 40px);
+      max-width: 600px;
+      margin: 20px auto;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+      background: #f3f3f3;
+      color: #111;
     }
     main {
       display: grid;
@@ -42,7 +68,7 @@
       margin: 0 auto;
     }
     .noticia {
-      background: #1e1e1e;
+      background: #1e2a3a;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -55,30 +81,55 @@
       padding: 15px;
     }
     .contenido h2 {
-      color: #ff4081;
+      color: #00b4d8;
       font-size: 1.3rem;
       margin: 0 0 10px;
     }
     .contenido p {
       font-size: 0.95rem;
-      color: #ddd;
+      color: #e0f2ff;
       margin-bottom: 10px;
     }
     .contenido .autor, .contenido .fecha {
       font-size: 0.8rem;
-      color: #aaa;
+      color: #90a4ae;
     }
+    .reacciones button, .comentarios button {
+      margin-right: 5px;
+      background: #0077b6;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .comentarios input {
+      width: 80%;
+      padding: 6px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    ul { padding-left: 20px; }
+    li { font-size: 0.9rem; margin-bottom: 5px; color: #e0f2ff; }
   </style>
 </head>
 <body>
   <header>
-    <h1>JD News - sempai anime</h1>
+    <h1>JD News Anime Pagana</h1>
     <p id="subtitulo">Noticias exclusivas desde Perú para la comunidad otaku</p>
+    <div id="idiomaLabel">🌐 Elige tu idioma:</div>
     <select id="idioma">
       <option value="jdnew">🇲🇽 Español</option>
       <option value="jdnew-en">🇺🇸 English</option>
     </select>
+    <div class="redes">
+      <a href="https://t.me/sempaianime" target="_blank">📲 Telegram</a>
+      <a href="https://facebook.com/sempaianime" target="_blank">📘 Facebook</a>
+      <a href="https://x.com/sempaianime" target="_blank">🐦 X</a>
+    </div>
   </header>
+  <input id="buscador" placeholder="Buscar noticias..." />
   <main id="contenedorNoticias">Cargando...</main>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -98,23 +149,27 @@
     const contenedor = document.getElementById("contenedorNoticias");
     const subtitulo = document.getElementById("subtitulo");
     const idiomaSelector = document.getElementById("idioma");
+    const buscador = document.getElementById("buscador");
 
     let categoriaActual = "jdnew";
+    let noticias = [];
 
     const textos = {
       jdnew: {
         subtitulo: "Noticias exclusivas desde Perú para la comunidad otaku",
-        sinNoticias: "No se encontraron noticias de JD News."
+        sinNoticias: "No se encontraron noticias de JD News.",
+        buscar: "Buscar noticias..."
       },
       "jdnew-en": {
         subtitulo: "Exclusive news from Peru for the otaku community",
-        sinNoticias: "No JD News articles found."
+        sinNoticias: "No JD News articles found.",
+        buscar: "Search news..."
       }
     };
 
     function cargarJDNews() {
       db.ref("jdnew").limitToLast(100).once("value").then(snap => {
-        const noticias = [];
+        noticias = [];
         snap.forEach(c => {
           const n = c.val();
           if (n.categoria === categoriaActual) {
@@ -146,18 +201,86 @@
             ${n.trailer ? `<p>🔗 Trailer: <a href="${n.trailer}" target="_blank">${n.trailer}</a></p>` : ""}
             <div class="autor">✍️ ${n.autor || "JD News"}</div>
             <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
+            <div class="reacciones">
+              <button onclick="darLike('${n.id}')">👍 Me gusta</button>
+              <button onclick="darDislike('${n.id}')">👎 No me gusta</button>
+              <span id="likes-${n.id}">${n.likes || 0}</span> likes,
+              <span id="dislikes-${n.id}">${n.dislikes || 0}</span> dislikes
+            </div>
+            <div class="comentarios">
+              <input type="text" id="comentario-${n.id}" placeholder="💬 Comentar..." />
+              <button onclick="comentar('${n.id}')">💬 Comentar</button>
+              <ul id="lista-comentarios-${n.id}"></ul>
+            </div>
           </div>
         `;
         contenedor.appendChild(art);
+
+                const lista = document.getElementById("lista-comentarios-" + n.id);
+        db.ref(`jdnew/${n.id}/comentarios`).on("value", snap => {
+          lista.innerHTML = "";
+          snap.forEach(c => {
+            const com = c.val();
+            const li = document.createElement("li");
+            li.textContent = `💬 ${com.autor}: ${com.texto}`;
+            lista.appendChild(li);
+          });
+        });
+
+        db.ref(`jdnew/${n.id}/likes`).on("value", snap => {
+          const span = document.getElementById("likes-" + n.id);
+          if (span) span.textContent = snap.val() || 0;
+        });
+
+        db.ref(`jdnew/${n.id}/dislikes`).on("value", snap => {
+          const span = document.getElementById("dislikes-" + n.id);
+          if (span) span.textContent = snap.val() || 0;
+        });
       });
     }
+
+    function darLike(id) {
+      const ref = db.ref(`jdnew/${id}/likes`);
+      ref.transaction(likes => (likes || 0) + 1);
+    }
+
+    function darDislike(id) {
+      const ref = db.ref(`jdnew/${id}/dislikes`);
+      ref.transaction(dislikes => (dislikes || 0) + 1);
+    }
+
+    function comentar(id) {
+      const input = document.getElementById("comentario-" + id);
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      const nuevoComentario = {
+        autor: "Anónimo",
+        texto,
+        fecha: new Date().toISOString()
+      };
+
+      db.ref(`jdnew/${id}/comentarios`).push(nuevoComentario);
+      input.value = "";
+    }
+
+    buscador.addEventListener("input", () => {
+      const txt = buscador.value.toLowerCase();
+      render(noticias.filter(n =>
+        (n.titulo || "").toLowerCase().includes(txt) ||
+        (n.descripcion || n.descripcion1 || "").toLowerCase().includes(txt) ||
+        (n.texto || "").toLowerCase().includes(txt)
+      ));
+    });
 
     idiomaSelector.addEventListener("change", e => {
       categoriaActual = e.target.value;
       subtitulo.textContent = textos[categoriaActual].subtitulo;
+      buscador.placeholder = textos[categoriaActual].buscar;
       cargarJDNews();
     });
 
+    buscador.placeholder = textos[categoriaActual].buscar;
     cargarJDNews();
   </script>
 </body>
