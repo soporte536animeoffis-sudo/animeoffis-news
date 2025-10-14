@@ -147,76 +147,13 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCSqQKDFeVwEYgzZEZRgJJKEPT-iQxCVWU",
-      authDomain: "puntos-50cef.firebaseapp.com",
-      databaseURL: "https://puntos-50cef-default-rtdb.firebaseio.com",
-      projectId: "puntos-50cef",
-      storageBucket: "puntos-50cef.appspot.com",
-      messagingSenderId: "602416916531",
-      appId: "1:602416916531:web:6c6ed7e1ef2b1de90a5b46"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const contenedor = document.getElementById("contenedorNoticias");
-    const buscador = document.getElementById("buscador");
-    tituloPrincipal.textContent = traducciones[idiomaActual].titulo;
-subtitulo.textContent = traducciones[idiomaActual].subtitulo;
-buscador.placeholder = traducciones[idiomaActual].buscar;
-
-    let noticias = [];
-    let idiomaActual = "es";
-
-    const traducciones = {
-      es: {
-        titulo: "Anime Offis New",
-        subtitulo: "Mantente al tanto de las novedades que tenemos para ti",
-        buscar: "Buscar noticias...",
-        etiquetas: {
-          pelicula: "🎬 Película",
-          noticia: "🔥 Anime",
-          anime: "🔥 Anime",
-          manga: "📚 Manga",
-          noticiasaf: "🌟 Anime Offis",
-          jdnew: "📰 JD-NEW"
-        },
-        botones: {
-          like: "👍 Me gusta",
-          dislike: "👎 No me gusta",
-          comentar: "💬 Comentar",
-          verMas: "Ver más",
-          verMenos: "Ver menos"
-        }
-      },
-      en: {
-        titulo: "Anime Offis News",
-        subtitulo: "Stay up to date with the latest news",
-        buscar: "Search news...",
-        etiquetas: {
-          pelicula: "🎬 Movie",
-          noticia: "🔥 Anime",
-          anime: "🔥 Anime",
-          manga: "📚 Manga",
-          noticiasaf: "🌟 Anime Offis",
-           jdnew: "📰 JD-NEW"
-        },
-        botones: {
-          like: "👍 Like",
-          dislike: "👎 Dislike",
-          comentar: "💬 Comment",
-          verMas: "Read more",
-          verMenos: "Read less"
-        }
-      }
-    };
-
-    function etiquetaPorTipo(tipo) {
-      return traducciones[idiomaActual].etiquetas[tipo] || tipo;
-    }
-
    nList.forEach((n, i) => {
   const t = traducciones[idiomaActual];
-  const full = n[`texto_${idiomaActual}`] || "";
+  const tituloKey = idiomaActual === "es" ? "titulo" : "en-titulo";
+  const descripcionKey = idiomaActual === "es" ? "descripcion" : "en-descripcion";
+  const textoKey = idiomaActual === "es" ? "texto" : "en-texto";
+
+  const full = n[textoKey] || "";
   const largo = full.length > 200;
   const resumen = largo ? full.slice(0, 200) + "..." : full;
   const tipo = etiquetaPorTipo(n.tipo || "noticia");
@@ -230,8 +167,8 @@ buscador.placeholder = traducciones[idiomaActual].buscar;
       <div class="etiqueta2">${tipo}</div>
     </div>
     <div class="contenido">
-      <h2 class="titulo"><a href="#">${n[`titulo_${idiomaActual}`] || "Sin título"}</a></h2>
-      ${(n[`descripcion_${idiomaActual}`] || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
+      <h2 class="titulo"><a href="#">${n[tituloKey] || "Sin título"}</a></h2>
+      ${(n[descripcionKey] || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
       <p class="texto" id="t${i}">${resumen}</p>
       ${largo ? `<span class="ver-mas" onclick="toggle(${i})">${t.botones.verMas}</span>` : ""}
       <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
@@ -250,44 +187,44 @@ buscador.placeholder = traducciones[idiomaActual].buscar;
     </div>
   `;
   contenedor.appendChild(art);
+
+  const lista = document.getElementById("lista-comentarios-" + n.id);
+  db.ref(`noticias/${n.id}/comentarios`).on("value", snap => {
+    lista.innerHTML = "";
+    snap.forEach(c => {
+      const com = c.val();
+      const li = document.createElement("li");
+      li.textContent = `💬 ${com.autor}: ${com.texto}`;
+      lista.appendChild(li);
+    });
+  });
+
+  db.ref(`noticias/${n.id}/likes`).on("value", snap => {
+    const span = document.getElementById("likes-" + n.id);
+    if (span) span.textContent = snap.val() || 0;
+  });
+
+  db.ref(`noticias/${n.id}/dislikes`).on("value", snap => {
+    const span = document.getElementById("dislikes-" + n.id);
+    if (span) span.textContent = snap.val() || 0;
+  });
 });
-        const lista = document.getElementById("lista-comentarios-" + n.id);
-        db.ref(`noticias/${n.id}/comentarios`).on("value", snap => {
-          lista.innerHTML = "";
-          snap.forEach(c => {
-            const com = c.val();
-            const li = document.createElement("li");
-            li.textContent = `💬 ${com.autor}: ${com.texto}`;
-            lista.appendChild(li);
-          });
-        });
 
-        db.ref(`noticias/${n.id}/likes`).on("value", snap => {
-          const span = document.getElementById("likes-" + n.id);
-          if (span) span.textContent = snap.val() || 0;
-        });
-
-        db.ref(`noticias/${n.id}/dislikes`).on("value", snap => {
-          const span = document.getElementById("dislikes-" + n.id);
-          if (span) span.textContent = snap.val() || 0;
-        });
-      });
-    }
 
     function toggle(i) {
-      const p = document.getElementById("t" + i);
-      const btn = p.nextElementSibling;
-      const full = noticias[i].texto;
-      const t = traducciones[idiomaActual].botones;
-      if (btn.textContent === t.verMas) {
-        p.textContent = full;
-        btn.textContent = t.verMenos;
-      } else {
-        p.textContent = full.slice(0, 200) + "...";
-        btn.textContent = t.verMas;
-      }
-    }
-
+  const p = document.getElementById("t" + i);
+  const btn = p.nextElementSibling;
+  const textoKey = idiomaActual === "es" ? "texto" : "en-texto";
+  const full = noticias[i][textoKey] || "";
+  const t = traducciones[idiomaActual].botones;
+  if (btn.textContent === t.verMas) {
+    p.textContent = full;
+    btn.textContent = t.verMenos;
+  } else {
+    p.textContent = full.slice(0, 200) + "...";
+    btn.textContent = t.verMas;
+  }
+}
     function darLike(id) {
       const ref = db.ref("noticias/" + id + "/likes");
       ref.transaction(likes => (likes || 0) + 1);
