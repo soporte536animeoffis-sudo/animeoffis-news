@@ -147,7 +147,75 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
-    const firebaseConfig = { apiKey: "AIzaSyCSqQKDFeVwEYgzZEZRgJJKEPT-iQxCVWU", authDomain: "puntos-50cef.firebaseapp.com", databaseURL: "https://puntos-50cef-default-rtdb.firebaseio.com", projectId: "puntos-50cef", storageBucket: "puntos-50cef.appspot.com", messagingSenderId: "602416916531", appId: "1:602416916531:web:6c6ed7e1ef2b1de90a5b46" }; firebase.initializeApp(firebaseConfig); const db = firebase.database(); const contenedor = document.getElementById("contenedorNoticias"); const buscador = document.getElementById("buscador"); titulo.textContent = traducciones[idiomaActual].titulo; subtitulo.textContent = traducciones[idiomaActual].subtitulo; buscador.placeholder = traducciones[idiomaActual].buscar; let noticias = []; let idiomaActual = "es"; const traducciones = { es: { titulo: "Anime Offis New", subtitulo: "Mantente al tanto de las novedades que tenemos para ti", buscar: "Buscar noticias...", etiquetas: { pelicula: "🎬 Película", noticia: "🔥 Anime", anime: "🔥 Anime", manga: "📚 Manga", noticiasaf: "🌟 Anime Offis", jdnew: "📰 JD-NEW" }, botones: { like: "👍 Me gusta", dislike: "👎 No me gusta", comentar: "💬 Comentar", verMas: "Ver más", verMenos: "Ver menos" } }, en: { titulo: "Anime Offis News", subtitulo: "Stay up to date with the latest news", buscar: "Search news...", etiquetas: { pelicula: "🎬 Movie", noticia: "🔥 Anime", anime: "🔥 Anime", manga: "📚 Manga", noticiasaf: "🌟 Anime Offis", jdnew: "📰 JD-NEW" }, botones: { like: "👍 Like", dislike: "👎 Dislike", comentar: "💬 Comment", verMas: "Read more", verMenos: "Read less" } } }; function etiquetaPorTipo(tipo) { return traducciones[idiomaActual].etiquetas[tipo] || tipo; }
+   <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCSqQKDFeVwEYgzZEZRgJJKEPT-iQxCVWU",
+    authDomain: "puntos-50cef.firebaseapp.com",
+    databaseURL: "https://puntos-50cef-default-rtdb.firebaseio.com",
+    projectId: "puntos-50cef",
+    storageBucket: "puntos-50cef.appspot.com",
+    messagingSenderId: "602416916531",
+    appId: "1:602416916531:web:6c6ed7e1ef2b1de90a5b46"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  let idiomaActual = "es";
+  const traducciones = {
+    es: {
+      titulo: "Anime Offis New",
+      subtitulo: "Mantente al tanto de las novedades que tenemos para ti",
+      buscar: "Buscar noticias...",
+      etiquetas: {
+        pelicula: "🎬 Película",
+        noticia: "🔥 Anime",
+        anime: "🔥 Anime",
+        manga: "📚 Manga",
+        noticiasaf: "🌟 Anime Offis",
+        jdnew: "📰 JD-NEW"
+      },
+      botones: {
+        like: "👍 Me gusta",
+        dislike: "👎 No me gusta",
+        comentar: "💬 Comentar",
+        verMas: "Ver más",
+        verMenos: "Ver menos"
+      }
+    },
+    en: {
+      titulo: "Anime Offis News",
+      subtitulo: "Stay up to date with the latest news",
+      buscar: "Search news...",
+      etiquetas: {
+        pelicula: "🎬 Movie",
+        noticia: "🔥 Anime",
+        anime: "🔥 Anime",
+        manga: "📚 Manga",
+        noticiasaf: "🌟 Anime Offis",
+        jdnew: "📰 JD-NEW"
+      },
+      botones: {
+        like: "👍 Like",
+        dislike: "👎 Dislike",
+        comentar: "💬 Comment",
+        verMas: "Read more",
+        verMenos: "Read less"
+      }
+    }
+  };
+
+  const contenedor = document.getElementById("contenedorNoticias");
+  const buscador = document.getElementById("buscador");
+  const titulo = document.getElementById("titulo");
+  const subtitulo = document.getElementById("subtitulo");
+
+  titulo.textContent = traducciones[idiomaActual].titulo;
+  subtitulo.textContent = traducciones[idiomaActual].subtitulo;
+  buscador.placeholder = traducciones[idiomaActual].buscar;
+
+  function etiquetaPorTipo(tipo) {
+    return traducciones[idiomaActual].etiquetas[tipo] || tipo;
+  }
    nList.forEach((n, i) => {
   const t = traducciones[idiomaActual];
   const tituloKey = idiomaActual === "es" ? "titulo" : "en-titulo";
