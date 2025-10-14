@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JD News Anime Pagana</title>
+  <title>JD News - sempai anime</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -72,11 +72,11 @@
 </head>
 <body>
   <header>
-    <h1>JD News Anime Pagana</h1>
+    <h1>JD News - sempai anime</h1>
     <p id="subtitulo">Noticias exclusivas desde Perú para la comunidad otaku</p>
     <select id="idioma">
-      <option value="es">🇲🇽 Español</option>
-      <option value="en">🇺🇸 English</option>
+      <option value="jdnew">🇲🇽 Español</option>
+      <option value="jdnew-en">🇺🇸 English</option>
     </select>
   </header>
   <main id="contenedorNoticias">Cargando...</main>
@@ -99,27 +99,28 @@
     const subtitulo = document.getElementById("subtitulo");
     const idiomaSelector = document.getElementById("idioma");
 
-    let idiomaActual = "es";
+    let categoriaActual = "jdnew";
 
     const textos = {
-      es: {
+      jdnew: {
         subtitulo: "Noticias exclusivas desde Perú para la comunidad otaku",
         sinNoticias: "No se encontraron noticias de JD News."
       },
-      en: {
+      "jdnew-en": {
         subtitulo: "Exclusive news from Peru for the otaku community",
         sinNoticias: "No JD News articles found."
       }
     };
 
     function cargarJDNews() {
-      const rama = idiomaActual === "en" ? "jdnew-en" : "jdnew";
-      db.ref(rama).limitToLast(100).once("value").then(snap => {
+      db.ref("jdnew").limitToLast(100).once("value").then(snap => {
         const noticias = [];
         snap.forEach(c => {
           const n = c.val();
-          n.id = c.key;
-          noticias.push(n);
+          if (n.categoria === categoriaActual) {
+            n.id = c.key;
+            noticias.push(n);
+          }
         });
 
         noticias.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -130,7 +131,7 @@
     function render(nList) {
       contenedor.innerHTML = "";
       if (nList.length === 0) {
-        contenedor.innerHTML = `<p>${textos[idiomaActual].sinNoticias}</p>`;
+        contenedor.innerHTML = `<p>${textos[categoriaActual].sinNoticias}</p>`;
         return;
       }
       nList.forEach(n => {
@@ -152,8 +153,8 @@
     }
 
     idiomaSelector.addEventListener("change", e => {
-      idiomaActual = e.target.value;
-      subtitulo.textContent = textos[idiomaActual].subtitulo;
+      categoriaActual = e.target.value;
+      subtitulo.textContent = textos[categoriaActual].subtitulo;
       cargarJDNews();
     });
 
