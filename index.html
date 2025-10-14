@@ -215,70 +215,71 @@
   function etiquetaPorTipo(tipo) {
     return traducciones[idiomaActual].etiquetas[tipo] || tipo;
   }
-   nList.forEach((n, i) => {
+function render(nList) {
   const t = traducciones[idiomaActual];
-  const tituloKey = idiomaActual === "es" ? "titulo" : "en-titulo";
-  const descripcionKey = idiomaActual === "es" ? "descripcion" : "en-descripcion";
-  const textoKey = idiomaActual === "es" ? "texto" : "en-texto";
 
-  const full = n[textoKey] || "";
-  const largo = full.length > 200;
-  const resumen = largo ? full.slice(0, 200) + "..." : full;
-  const tipo = etiquetaPorTipo(n.tipo || "noticia");
+  nList.forEach((n, i) => {
+    const tituloKey = idiomaActual === "es" ? "titulo" : "en-titulo";
+    const descripcionKey = idiomaActual === "es" ? "descripcion" : "en-descripcion";
+    const textoKey = idiomaActual === "es" ? "texto" : "en-texto";
 
-  const art = document.createElement("article");
-  art.className = "noticia";
-  art.innerHTML = `
-    <div class="img-contenedor">
-      <img src="${n.imagen1 || n.imagen}" alt="Imagen">
-      <div class="etiqueta">Ofis-New</div>
-      <div class="etiqueta2">${tipo}</div>
-    </div>
-    <div class="contenido">
-      <h2 class="titulo"><a href="#">${n[tituloKey] || "Sin título"}</a></h2>
-      ${(n[descripcionKey] || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
-      <p class="texto" id="t${i}">${resumen}</p>
-      ${largo ? `<span class="ver-mas" onclick="toggle(${i})">${t.botones.verMas}</span>` : ""}
-      <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
-      <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
-      <div class="reacciones">
-        <button onclick="darLike('${n.id}')">${t.botones.like}</button>
-        <button onclick="darDislike('${n.id}')">${t.botones.dislike}</button>
-        <span id="likes-${n.id}">${n.likes || 0}</span> likes,
-        <span id="dislikes-${n.id}">${n.dislikes || 0}</span> dislikes
+    const full = n[textoKey] || "";
+    const largo = full.length > 200;
+    const resumen = largo ? full.slice(0, 200) + "..." : full;
+    const tipo = etiquetaPorTipo(n.tipo || "noticia");
+
+    const art = document.createElement("article");
+    art.className = "noticia";
+    art.innerHTML = `
+      <div class="img-contenedor">
+        <img src="${n.imagen1 || n.imagen}" alt="Imagen">
+        <div class="etiqueta">Ofis-New</div>
+        <div class="etiqueta2">${tipo}</div>
       </div>
-      <div class="comentarios">
-        <input type="text" id="comentario-${n.id}" placeholder="${t.botones.comentar}" />
-        <button onclick="comentar('${n.id}')">${t.botones.comentar}</button>
-        <ul id="lista-comentarios-${n.id}"></ul>
+      <div class="contenido">
+        <h2 class="titulo"><a href="#">${n[tituloKey] || "Sin título"}</a></h2>
+        ${(n[descripcionKey] || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
+        <p class="texto" id="t${i}">${resumen}</p>
+        ${largo ? `<span class="ver-mas" onclick="toggle(${i})">${t.botones.verMas}</span>` : ""}
+        <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
+        <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
+        <div class="reacciones">
+          <button onclick="darLike('${n.id}')">${t.botones.like}</button>
+          <button onclick="darDislike('${n.id}')">${t.botones.dislike}</button>
+          <span id="likes-${n.id}">${n.likes || 0}</span> likes,
+          <span id="dislikes-${n.id}">${n.dislikes || 0}</span> dislikes
+        </div>
+        <div class="comentarios">
+          <input type="text" id="comentario-${n.id}" placeholder="${t.botones.comentar}" />
+          <button onclick="comentar('${n.id}')">${t.botones.comentar}</button>
+          <ul id="lista-comentarios-${n.id}"></ul>
+        </div>
       </div>
-    </div>
-  `;
-  contenedor.appendChild(art);
+    `;
+    contenedor.appendChild(art);
 
-  const lista = document.getElementById("lista-comentarios-" + n.id);
-  db.ref(`noticias/${n.id}/comentarios`).on("value", snap => {
-    lista.innerHTML = "";
-    snap.forEach(c => {
-      const com = c.val();
-      const li = document.createElement("li");
-      li.textContent = `💬 ${com.autor}: ${com.texto}`;
-      lista.appendChild(li);
+    const lista = document.getElementById("lista-comentarios-" + n.id);
+    db.ref(`noticias/${n.id}/comentarios`).on("value", snap => {
+      lista.innerHTML = "";
+      snap.forEach(c => {
+        const com = c.val();
+        const li = document.createElement("li");
+        li.textContent = `💬 ${com.autor}: ${com.texto}`;
+        lista.appendChild(li);
+      });
+    });
+
+    db.ref(`noticias/${n.id}/likes`).on("value", snap => {
+      const span = document.getElementById("likes-" + n.id);
+      if (span) span.textContent = snap.val() || 0;
+    });
+
+    db.ref(`noticias/${n.id}/dislikes`).on("value", snap => {
+      const span = document.getElementById("dislikes-" + n.id);
+      if (span) span.textContent = snap.val() || 0;
     });
   });
-
-  db.ref(`noticias/${n.id}/likes`).on("value", snap => {
-    const span = document.getElementById("likes-" + n.id);
-    if (span) span.textContent = snap.val() || 0;
-  });
-
-  db.ref(`noticias/${n.id}/dislikes`).on("value", snap => {
-    const span = document.getElementById("dislikes-" + n.id);
-    if (span) span.textContent = snap.val() || 0;
-  });
-});
-
-
+}
     function toggle(i) {
   const p = document.getElementById("t" + i);
   const btn = p.nextElementSibling;
