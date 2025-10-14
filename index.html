@@ -214,48 +214,43 @@ buscador.placeholder = traducciones[idiomaActual].buscar;
       return traducciones[idiomaActual].etiquetas[tipo] || tipo;
     }
 
-    function render(nList) {
-      const t = traducciones[idiomaActual];
-      contenedor.innerHTML = "";
-      if (nList.length === 0) {
-        contenedor.innerHTML = `<p>${textos[idiomaActual].sinNoticias}</p>`;
-        return;
-      }
-      nList.forEach((n, i) => {
-        const largo = (n.texto || "").length > 200;
-        const resumen = largo ? n.texto.slice(0, 200) + "..." : n.texto;
-        const tipo = etiquetaPorTipo(n.tipo || "noticia");
-        const art = document.createElement("article");
-                art.className = "noticia";
-        art.innerHTML = `
-          <div class="img-contenedor">
-            <img src="${n.imagen1 || n.imagen}" alt="Imagen">
-            <div class="etiqueta">Ofis-New</div>
-            <div class="etiqueta2">${tipo}</div>
-          </div>
-          <div class="contenido">
-            <h2 class="titulo"><a href="#">${n.titulo || "Sin título"}</a></h2>
-           <h2 class="titulo"><a href="#">${n[`titulo_${idiomaActual}`] || "Sin título"}</a></h2>
-${(n[`descripcion_${idiomaActual}`] || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
-<p class="texto" id="t${i}">${(n[`texto_${idiomaActual}`] || "").slice(0, 200)}...</p>
-            const full = n[`texto_${idiomaActual}`] || "";
-            <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
-            <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
-            <div class="reacciones">
-              <button onclick="darLike('${n.id}')">${t.botones.like}</button>
-              <button onclick="darDislike('${n.id}')">${t.botones.dislike}</button>
-              <span id="likes-${n.id}">${n.likes || 0}</span> likes,
-              <span id="dislikes-${n.id}">${n.dislikes || 0}</span> dislikes
-            </div>
-            <div class="comentarios">
-              <input type="text" id="comentario-${n.id}" placeholder="${t.botones.comentar}" />
-              <button onclick="comentar('${n.id}')">${t.botones.comentar}</button>
-              <ul id="lista-comentarios-${n.id}"></ul>
-            </div>
-          </div>
-        `;
-        contenedor.appendChild(art);
+   nList.forEach((n, i) => {
+  const t = traducciones[idiomaActual];
+  const full = n[`texto_${idiomaActual}`] || "";
+  const largo = full.length > 200;
+  const resumen = largo ? full.slice(0, 200) + "..." : full;
+  const tipo = etiquetaPorTipo(n.tipo || "noticia");
 
+  const art = document.createElement("article");
+  art.className = "noticia";
+  art.innerHTML = `
+    <div class="img-contenedor">
+      <img src="${n.imagen1 || n.imagen}" alt="Imagen">
+      <div class="etiqueta">Ofis-New</div>
+      <div class="etiqueta2">${tipo}</div>
+    </div>
+    <div class="contenido">
+      <h2 class="titulo"><a href="#">${n[`titulo_${idiomaActual}`] || "Sin título"}</a></h2>
+      ${(n[`descripcion_${idiomaActual}`] || "").split('\n\n').map(p => `<p>${p}</p>`).join('')}
+      <p class="texto" id="t${i}">${resumen}</p>
+      ${largo ? `<span class="ver-mas" onclick="toggle(${i})">${t.botones.verMas}</span>` : ""}
+      <div class="autor">✍️ ${n.autor || "Anónimo"}</div>
+      <div class="fecha">📅 ${new Date(n.fecha).toLocaleString()}</div>
+      <div class="reacciones">
+        <button onclick="darLike('${n.id}')">${t.botones.like}</button>
+        <button onclick="darDislike('${n.id}')">${t.botones.dislike}</button>
+        <span id="likes-${n.id}">${n.likes || 0}</span> likes,
+        <span id="dislikes-${n.id}">${n.dislikes || 0}</span> dislikes
+      </div>
+      <div class="comentarios">
+        <input type="text" id="comentario-${n.id}" placeholder="${t.botones.comentar}" />
+        <button onclick="comentar('${n.id}')">${t.botones.comentar}</button>
+        <ul id="lista-comentarios-${n.id}"></ul>
+      </div>
+    </div>
+  `;
+  contenedor.appendChild(art);
+});
         const lista = document.getElementById("lista-comentarios-" + n.id);
         db.ref(`noticias/${n.id}/comentarios`).on("value", snap => {
           lista.innerHTML = "";
