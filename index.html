@@ -320,7 +320,7 @@
         db.ref("mangas").limitToLast(100).once("value"),
         db.ref("noticiasaf").limitToLast(100).once("value"),
          db.ref("jdnew").limitToLast(100).once("value")
-      ]).then(([snapNoticias, snapPeliculas, snapMangas, snapAF]) => {
+      ]).then(([snapNoticias, snapPeliculas, snapMangas, snapAF, snapJD]) => {
         const todos = [];
 
         snapNoticias.forEach(c => {
@@ -359,10 +359,10 @@
           a.texto = a.descripcion;
           todos.push(a);
         });
-         snapjdbews.forEach(c => {
+         snapJD.forEach(c => {
           const j = c.val();
           j.id = c.key;
-          j.tipo = "jdbew";
+          j.tipo = "jdnew";
           j.imagen1 = j.imagen;
           j.descripcion1 = j.descripcion;
           j.texto = j.descripcion;
