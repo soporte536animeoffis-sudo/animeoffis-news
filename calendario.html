@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calendario Anime Offis AF</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      background: linear-gradient(to bottom, #0f1115, #1a1f2b);
+      color: #eaeaea;
+    }
+      /* Fondo Invierno: tonos fríos con nieve */
+body.invierno {
+  background: linear-gradient(to bottom, #0f1115, #1a1f2b);
+  background-image: url('https://i.ibb.co/7rYJwLw/snowflakes.png');
+  background-repeat: repeat;
+  animation: snow 10s linear infinite;
+}
+
+/* Fondo Primavera: colores verdes y flores */
+body.primavera {
+  background: linear-gradient(to bottom, #2e7d32, #81c784);
+  background-image: url('https://i.ibb.co/4mYkTnB/flowers.png');
+  background-repeat: repeat;
+}
+
+/* Fondo Verano: tonos cálidos y sol */
+body.verano {
+  background: linear-gradient(to bottom, #ff9800, #fbc02d);
+  background-image: url('https://i.ibb.co/9rYJwLw/sunshine.png');
+  background-repeat: repeat;
+}
+
+/* Fondo Otoño: tonos naranjas y hojas */
+body.otoño {
+  background: linear-gradient(to bottom, #6d4c41, #ff7043);
+  background-image: url('https://i.ibb.co/nqDGJYyX/c64687a8aac6.png');
+  background-repeat: repeat;
+}
+
+/* Animación nieve */
+@keyframes snow {
+  from { background-position: 0 0; }
+  to { background-position: 0 100%; }
+}
+    header {
+      padding: 16px;
+      background: #141822;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: start;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: .5px;
+      color: #ffd369;
+    }
+    .calendar-header h2 {
+      font-size: 18px;
+      margin: 8px 0;
+      color: #ffd369;
+      text-transform: uppercase;
+    }
+    .selectors {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    select {
+      background: #1a1f2b;
+      color: #eaeaea;
+      border: 1px solid #2a3142;
+      padding: 6px;
+      border-radius: 6px;
+    }
+    .container {
+      padding: 16px;
+    }
+    .card {
+      background: #1a1f2b;
+      border: 1px solid #2a3142;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+    .card .meta {
+      padding: 10px;
+      font-size: 14px;
+    }
+    .card .meta div {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">Anime Offis AF · Calendarios</div>
+    <div class="calendar-header">
+      <h2></h2>
+    </div>
+    <!-- Selectores manuales -->
+    <div class="selectors">
+      <select id="yearSelect"></select>
+      <select id="seasonSelect">
+           <option value="otoño">Otoño</option>
+        <option value="invierno">Invierno</option>
+        <option value="primavera">Primavera</option>
+        <option value="verano">Verano</option>
+          </select>
+      <select id="daySelect">
+        <option value="jueves">Jueves</option>
+        <option value="viernes">Viernes</option>
+        <option value="sabado">Sabado</option>
+        <option value="domingo">Domingo</option>
+        <option value="lunes">Lunes</option>
+        <option value="martes">Martes</option>
+        <option value="miercoles">miercoles</option>
+      </select>
+      <button onclick="loadManualCalendar()">Ver calendario</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="calendarView"></div>
+  </div>
+  <small>
+    <strong>Los calendarios son propiedad de <a href="https://t.me/CalendariosUniverso">Calendarios Universo</a> y <a href="https://t.me/UniversoAnimee">Universo Anime</a>. Anime Offis AF los toma prestado por parte de
+    <a href="https://t.me/AFalienze">AF Alianza de Anime Offis</a>. Se dan los créditos a Calendarios Universo por prestarnos sus calendarios para noticias Anime Offis.</strong>
+  </small>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    // Configuración Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCSqQKDFeVwEYgzZEZRgJJKEPT-iQxCVWU",
+      authDomain: "puntos-50cef.firebaseapp.com",
+      databaseURL: "https://puntos-50cef-default-rtdb.firebaseio.com",
+      projectId: "puntos-50cef",
+      storageBucket: "puntos-50cef.appspot.com",
+      messagingSenderId: "602416916531",
+      appId: "1:602416916531:web:6c6ed7e1ef2b1de90a5b46"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Detectar temporada, día y año actual
+    function getCalendarContext() {
+      const now = new Date();
+      const dayIndex = now.getDay(); // 0 = domingo
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+
+      const weekdayMap = ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
+const weekdayNameMap = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+      const seasonMap = {
+        invierno: [12,1,2],
+        primavera: [3,4,5],
+        verano: [6,7,8],
+        otoño: [9,10,11]
+      };
+
+      const seasonKey = Object.keys(seasonMap).find(s => seasonMap[s].includes(month));
+      return {
+        season: seasonKey,
+        seasonName: seasonKey.charAt(0).toUpperCase() + seasonKey.slice(1),
+        weekday: weekdayMap[dayIndex],
+        weekdayName: weekdayNameMap[dayIndex],
+        year
+      };
+    }
+
+    // Renderizar tarjeta de calendario
+    function card(item) {
+      return `
+        <div class="card">
+          <img src="${item.image}" alt="${item.title}">
+          <div class="meta">
+            <div><strong>${item.title}</strong></div>
+            <div>Autor: ${item.autor || "Desconocido"}</div>
+            <div>Fecha: ${new Date(item.fecha).toLocaleString("es-MX")}</div>
+          </div>
+        </div>`;
+    }
+
+    // Cargar calendario de hoy desde Firebase
+    async function loadTodayCalendar() {
+      const { season, seasonName, weekday, weekdayName, year } = getCalendarContext();
+      const header = `Calendario de ${seasonName} · ${weekdayName} · ${year}`;
+      document.querySelector(".calendar-header h2").textContent = header;
+
+      const calendarView = document.getElementById("calendarView");
+
+      const ref = db.ref(`calendars/seasons/${year}/${weekday}/${season}`);
+      const snap = await ref.once("value");
+      const data = snap.val();
+
+      if (!data) {
+        calendarView.innerHTML = "No hay calendario programado para hoy.";
+        return;
+      }
+
+      const items = Object.values(data);
+      calendarView.innerHTML = items.map(card).join("");
+    }
+
+    // Cargar calendario manual según selector
+    async function loadManualCalendar() {
+      const year = document.getElementById("yearSelect").value;
+      const season = document.getElementById("seasonSelect").value;
+      const weekday = document.getElementById("daySelect").value;
+
+      const header = `Calendario de ${season.charAt(0).toUpperCase() + season.slice(1)} · ${weekday.charAt(0).toUpperCase() + weekday.slice(1)} · ${year}`;
+      document.querySelector(".calendar-header h2").textContent = header;
+
+      const calendarView = document.getElementById("calendarView");
+      const ref = db.ref(`calendars/seasons/${year}/${weekday}/${season}`);
+      const snap = await ref.once("value");
+      const data = snap.val();
+
+      if (!data) {
+        calendarView.innerHTML = "No hay calendario guardado en esa fecha.";
+        return;
+      }
+
+      const items = Object.values(data);
+      calendarView.innerHTML = items.map(card).join("");
+    }
+
+    // Inicializar selector de años (ejemplo: 2023-2030)
+    function initYearSelect() {
+      const yearSelect = document.getElementById("yearSelect");
+      const currentYear = new Date().getFullYear();
+      let options = "";
+      for (let y = currentYear; y >= 2020; y--) {
+        options += `<option value="${y}">${y}</option>`;
+      }
+      yearSelect.innerHTML = options;
+    }
+      function applySeasonEffect(season) {
+  // Quitar clases previas
+  document.body.classList.remove("invierno","primavera","verano","otoño");
+  // Agregar clase de la temporada actual
+  document.body.classList.add(season);
+}
+
+// Ejemplo: al cargar calendario de hoy
+async function loadTodayCalendar() {
+  const { season, seasonName, weekday, weekdayName, year } = getCalendarContext();
+  const header = `Calendario de ${seasonName} · ${weekdayName} · ${year}`;
+  document.querySelector(".calendar-header h2").textContent = header;
+
+  // Aplicar efecto visual
+  applySeasonEffect(season);
+
+  const calendarView = document.getElementById("calendarView");
+  const ref = db.ref(`calendars/seasons/${year}/${weekday}/${season}`);
+  const snap = await ref.once("value");
+  const data = snap.val();
+
+  if (!data) {
+    calendarView.innerHTML = "No hay calendario programado para hoy.";
+    return;
+  }
+
+  const items = Object.values(data);
+  calendarView.innerHTML = items.map(card).join("");
+}
+
+    initYearSelect();
+    loadTodayCalendar();
+    applySeasonEffect(season);
+
+  </script>
+</body>
+</html>
